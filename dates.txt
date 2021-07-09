@@ -1,0 +1,17 @@
+room        time
+
+1       |   √jan feb √mar apr may jun jul aug sep oct nov dec
+
+2       |   jan √feb mar apr may jun jul aug sep oct nov dec
+
+3       |   √jan √feb √mar apr may jun jul aug sep oct nov dec
+
+4       |   √jan √feb mar apr may jun jul aug sep oct nov dec
+
+5       |   jan √feb √mar apr may jun jul aug sep oct nov dec   
+
+1: [ {start: '2021-01-01', end: '2021-01-31'}, {start: '2021-03-01', end: '2021-03-31'} ]
+2: [ {start: '2021-02-01', end: '2021-02-28'} ]
+3: [ {start: '2021-01-01', end: '2021-01-31'}, {start: '2021-02-01', end: '2021-02-28'}, {start: '2021-03-01', end: '2021-03-31'} ]
+4: [ {start: '2021-01-01', end: '2021-01-31'}, {start: '2021-02-01', end: '2021-02-28'} ]
+5: [ {start: '2021-04-01', end: '2021-04-31'}, {start: '2021-03-01', end: '2021-03-31'} ]

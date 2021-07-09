@@ -1,38 +1,29 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
+import query from './app.database';
 import { AppService } from './app.service';
+import * as SQL from './utils/queries';
 
-// maybe not here?
-import axios, { AxiosResponse } from 'axios';
-// import * as pg from 'pg';
+interface IDateInterval {
+  start: string;
+  end: string;
+}
 
-const pgConfig = {
-  user: 'postgres', //this is the db user credential
-  database: 'hotel',
-  password: null,
-  port: 5432,
-  max: 10, // max number of clients in the pool
-  idleTimeoutMillis: 30000,
-};
+// const formatData = () => {
 
-// const pool = new pg.Pool(pgConfig);
+// }
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get()
-  getHello() {
-    // pool.on('connect', () => {
-    //   console.log('connected');
-    // });
-    const getData = async () => {
-      // must be as controller ------------------------------
-      const axiosResponse: AxiosResponse = await axios
-        .get('https://fish-text.ru/get')
-        .then((res) => res);
-      // must be as controller ------------------------------
-      return axiosResponse.data.text;
+  @Get('/room/date?')
+  getAllRooms(@Query() date: IDateInterval) {
+    const getAllData = async () => {
+      const { rows } = await query(SQL.QGetAllRoomsWithDates);
+      // const text = `Requested dates: date.start=${date.start} ndate.end=${date.end}`;
+      rows.map((el) => (el.start = new Date(el.start + '03:00:00')));
+      return rows;
     };
-    return getData();
+    return getAllData();
   }
 }
