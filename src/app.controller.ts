@@ -1,8 +1,9 @@
 import { Controller, Get, Param, Post, Query } from '@nestjs/common';
 import query from './app.database';
 import { AppService } from './app.service';
-import * as SQL from './utils/queries';
+process.env.TZ = 'UTC';
 
+// где должны быть интерфейсы?
 interface IDateInterval {
   start: string;
   end: string;
@@ -12,27 +13,29 @@ interface IParams {
   id: string;
 }
 
-const isValid = (start, end) => {
+// константы могу вынести в отдельный модуль, но тут нагляднее
+const ROOMS_COUNT = 10;
+const monthNames: string[] = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+const isValid = (start: string, end: string): true | false => {
   const firstDate: any = new Date(start);
   const secondDate: any = new Date(end);
-  const d = secondDate - firstDate;
+  const d: number = secondDate - firstDate;
   if (d > 0) return true;
   else return false;
-};
-
-const isoDate = (date) => new Date(date + ' 24:');
-
-const formatAllSelection = (data) => {
-  const resultArray = [];
-  const temp = [];
-
-  data.forEach((element) => {
-    temp.push({
-      Room: Number(element.json_build_object.Room),
-      Date: element.json_build_object.Date,
-    });
-  });
-  return temp;
 };
 
 @Controller()
@@ -44,7 +47,6 @@ export class AppController {
     if (!isValid(date.start, date.end)) return 'Dates are not valid!!!';
 
     const getFree = async () => {
-      // if (!isValid(date.start, date.end)) return 'Dates is wrong!!!';
       const { rows } = await query(
         `SELECT room.r_id FROM room LEFT JOIN date ON (date.room_id = room.r_id 
           AND NOT ( ("date"."start" < '${date.start}' and "date"."end" < '${date.start}') 
@@ -64,6 +66,7 @@ export class AppController {
       let isFree: true | false = false;
       let price: number;
 
+      // нужно ли вынести в функцию? ----------------------------
       const startQuery = await query(
         `select extract(dow from date '${date.start}');`,
       );
@@ -81,9 +84,7 @@ export class AppController {
         endLikeWeek === 1
       )
         return "Booking can't be at Monday or Thursday";
-      // console.log(
-      //   `Request from ${date.start} to ${date.end}, room: ${params.id}`,
-      // );
+      // нужно ли вынести в функцию? ----------------------------
 
       const { rows } = await query(
         `SELECT room.r_id FROM room LEFT JOIN date ON (date.room_id = room.r_id 
@@ -101,15 +102,17 @@ export class AppController {
       );
       const { days } = time.rows[0].period;
 
+      // тоже функция ?--------------
       if (days <= 10 && days > 0) price = days * 1000;
       else if (days <= 20) price = days * 1000 * 0.9;
       else price = days * 1000 * 0.8;
+      // тоже функция ?--------------
 
       if (isFree) {
-        // await query(
-        //   `INSERT INTO date ("start", "end", room_id, price, interval)
-        //   VALUES ('${date.start}','${date.end}',${params.id},${price},-('${date.start}'::timestamp-'${date.end}'));`,
-        // );
+        await query(
+          `INSERT INTO date ("start", "end", room_id, price, interval)
+          VALUES ('${date.start}','${date.end}',${params.id},${price},-('${date.start}'::timestamp-'${date.end}'));`,
+        );
         return `Congratulations, Your room ${params.id} is booked from ${date.start} to ${date.end}
         ${rows}`;
       } else return `Room is already booked from ${date.start} to ${date.end}`;
@@ -123,18 +126,57 @@ export class AppController {
 
     const reporting = async () => {
       const { rows } = await query(
-        `SELECT room.r_id, "date"."start"::timestamp,"date"."end"::timestamp, "date"."interval",date.price FROM room inner JOIN date ON date.room_id = room.r_id
-        WHERE ("date"."start"<='2021-01-15' and "date"."end">='2021-01-15')
-        or   ("date"."start">='2021-01-15' and "date"."start"<='2021-01-25')`,
+        `SELECT TO_CHAR(g.d, 'YYYY-MM-DD') AS Date, COUNT(*) AS Used
+        FROM generate_series(
+            (select '${date.start}')::timestamp,
+            (select '${date.end}')::timestamp, '1 day'
+          ) AS g(d)
+        INNER JOIN date d
+          ON 
+          (g.d + INTERVAL '1 day', g.d - INTERVAL '1 day') OVERLAPS (d.start, d.end)
+          GROUP BY 1
+        HAVING COUNT(*) > 0
+        ORDER BY 1`,
       );
-      rows.forEach((el: any) => {
-        const st = new Date(el.start + ' 3:00').toString().substr(10);
-        const en = new Date(el.end + ' 3:00').toString().substr(10);
-        console.log(el.start.toString());
-        // el.start = `${st.getFullYear()}-${st.getMonth()}-${st.getDay()}`;
-        // el.end = `${en.getFullYear()}-${en.getMonth()}-${en.getDay()}`;
+
+      const time = await query(
+        `select -('${date.start}'::timestamp-'${date.end}') as period`,
+      );
+      const { days } = time.rows[0].period;
+
+      // тоже в функцию? -------------
+      const result = {};
+      const report = {};
+
+      rows.forEach((el) => {
+        const date = new Date(el.date);
+        const stringKey = `${
+          monthNames[date.getMonth()]
+        }-${date.getFullYear()}`;
+        if (stringKey in result) {
+          result[stringKey] = {
+            customersCount: result[stringKey].customersCount + Number(el.used),
+            daysCount: result[stringKey].daysCount + 1,
+          };
+          report[stringKey] = {
+            ...report[stringKey],
+            [el.date]: (el.used / ROOMS_COUNT) * 100 + '%',
+          };
+        } else {
+          result[stringKey] = {
+            customersCount: Number(el.used),
+            daysCount: 1,
+          };
+          report[stringKey] = {
+            [el.date]: (el.used / ROOMS_COUNT) * 100 + '%',
+          };
+        }
       });
-      return rows;
+      report['obj_description'] =
+        'obj = { obj_description: string, month-YYYY: { YYYY-MM-DD: load } }';
+      // тоже в функцию? -------------
+
+      return report;
     };
     return reporting();
   }
