@@ -21,7 +21,7 @@ describe('AppController', () => {
   describe('root', () => {
     it('should return ...', () => {
       expect(
-        appController.getFreeRooms({ start: '2021-01-01', end: '2021-01-31' }),
+        appController.getFreeRooms({ start: '2021-01-01', end: '2021-01-14' }),
       ).toBe([Rooms]);
     });
   });
