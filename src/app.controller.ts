@@ -1,9 +1,17 @@
 import { Controller, Get, Param, Post, Query } from '@nestjs/common';
 import query from './app.database';
 import { AppService } from './app.service';
+import {
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiParam,
+  ApiProperty,
+  ApiQuery,
+  ApiBody,
+} from '@nestjs/swagger';
 process.env.TZ = 'UTC';
 
-// где должны быть интерфейсы?
+// где должны быть интерфейсы/классы?
 interface IDateInterval {
   start: string;
   end: string;
@@ -11,6 +19,37 @@ interface IDateInterval {
 
 interface IParams {
   id: string;
+}
+
+interface Row {
+  [key: string]: string;
+}
+
+class DateQuery {
+  @ApiProperty()
+  start: string;
+  @ApiProperty()
+  end: string;
+}
+
+class IdParam {
+  @ApiProperty()
+  id: string;
+}
+
+class Rooms {
+  @ApiProperty()
+  r_id: number;
+}
+
+class DayLoad {
+  @ApiProperty()
+  ['YYYY-MM-DD']: string;
+}
+
+class Report {
+  @ApiProperty()
+  ['Month-YYYY']: DayLoad;
 }
 
 // константы могу вынести в отдельный модуль, но тут нагляднее
@@ -43,6 +82,15 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get('/room/date?')
+  @ApiOkResponse({
+    description: 'Get free rooms on query dates (date?start=&end=)',
+    isArray: true,
+  })
+  @ApiQuery({ type: DateQuery })
+  @ApiBody({
+    description: 'Message',
+    type: [Rooms],
+  })
   getFreeRooms(@Query() date: IDateInterval) {
     if (!isValid(date.start, date.end)) return 'Dates are not valid!!!';
 
@@ -59,6 +107,15 @@ export class AppController {
   }
 
   @Post('/room/:id/date?')
+  @ApiCreatedResponse({
+    description: 'Book room on query dates (date?start=&end=)',
+  })
+  @ApiParam({
+    name: 'id',
+    type: IdParam,
+    example: 1,
+  })
+  @ApiQuery({ type: DateQuery, example: 'YYYY-MM-DD' })
   dealRoom(@Query() date: IDateInterval, @Param() params: IParams) {
     if (!isValid(date.start, date.end)) return 'Dates are not valid!!!';
 
@@ -75,7 +132,6 @@ export class AppController {
       );
       const startLikeWeek = startQuery.rows[0].date_part;
       const endLikeWeek = endQuery.rows[0].date_part;
-      console.log(startLikeWeek, endLikeWeek);
 
       if (
         startLikeWeek === 4 ||
@@ -121,6 +177,14 @@ export class AppController {
   }
 
   @Get('/report/date?')
+  @ApiOkResponse({
+    description: 'Get report on query dates (date?start=&end=)',
+  })
+  @ApiQuery({ type: DateQuery })
+  @ApiBody({
+    description: 'Message',
+    type: [Report],
+  })
   getReport(@Query() date: IDateInterval) {
     if (!isValid(date.start, date.end)) return 'Dates are not valid!!!';
 
