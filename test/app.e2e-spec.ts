@@ -17,8 +17,7 @@ describe('AppController (e2e)', () => {
 
   it('/ (GET)', () => {
     return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+      .get('/room/date?start=2021-01-01&end=2021-01-14')
+      .expect(404);
   });
 });

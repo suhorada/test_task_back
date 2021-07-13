@@ -2,6 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
+class Rooms {
+  r_id: number;
+}
+
 describe('AppController', () => {
   let appController: AppController;
 
@@ -15,8 +19,10 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getAllRooms()).toBe('Hello World!');
+    it('should return ...', () => {
+      expect(
+        appController.getFreeRooms({ start: '2021-01-01', end: '2021-01-31' }),
+      ).toBe([Rooms]);
     });
   });
 });
