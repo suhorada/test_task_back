@@ -9,6 +9,7 @@ import {
   ApiQuery,
   ApiBody,
 } from '@nestjs/swagger';
+import * as Queries from './utils/SQL/queries';
 process.env.TZ = 'UTC';
 
 // где должны быть интерфейсы/классы?
@@ -70,11 +71,10 @@ const monthNames: string[] = [
 ];
 
 const isValid = (start: string, end: string): true | false => {
-  const firstDate: any = new Date(start);
-  const secondDate: any = new Date(end);
-  const d: number = secondDate - firstDate;
-  if (d > 0) return true;
-  else return false;
+  const firstDate: Date = new Date(start);
+  const secondDate: Date = new Date(end);
+  const d: number = Number(secondDate) - Number(firstDate);
+  return d > 0;
 };
 
 @Controller()
@@ -92,15 +92,14 @@ export class AppController {
     type: [Rooms],
   })
   getFreeRooms(@Query() date: IDateInterval) {
-    if (!isValid(date.start, date.end)) return 'Dates are not valid!!!';
+    const dateIsValid = isValid(date.start, date.end);
+    if (!dateIsValid) return 'Dates are not valid!!!';
 
     const getFree = async () => {
-      const { rows } = await query(
-        `SELECT room.r_id FROM room LEFT JOIN date ON (date.room_id = room.r_id 
-          AND NOT ( ("date"."start" < '${date.start}' and "date"."end" < '${date.start}') 
-          OR ("date"."start" > '${date.end}' and "date"."end" > '${date.end}') )) 
-        WHERE date.room_id IS NULL;`,
-      );
+      const { rows } = await query(Queries.getFreeRoom2(), [
+        date.start,
+        date.end,
+      ]);
       return rows;
     };
     return getFree();
@@ -117,19 +116,16 @@ export class AppController {
   })
   @ApiQuery({ type: DateQuery, example: 'YYYY-MM-DD' })
   dealRoom(@Query() date: IDateInterval, @Param() params: IParams) {
-    if (!isValid(date.start, date.end)) return 'Dates are not valid!!!';
+    const dateIsValid = isValid(date.start, date.end);
+    if (!dateIsValid) return 'Dates are not valid!!!';
 
     const tryToPost = async () => {
       let isFree: true | false = false;
       let price: number;
 
       // нужно ли вынести в функцию? ----------------------------
-      const startQuery = await query(
-        `select extract(dow from date '${date.start}');`,
-      );
-      const endQuery = await query(
-        `select extract(dow from date '${date.end}');`,
-      );
+      const startQuery = await query(Queries.getDayOfDate(date.start));
+      const endQuery = await query(Queries.getDayOfDate(date.end));
       const startLikeWeek = startQuery.rows[0].date_part;
       const endLikeWeek = endQuery.rows[0].date_part;
 
@@ -142,20 +138,13 @@ export class AppController {
         return "Booking can't be at Monday or Thursday";
       // нужно ли вынести в функцию? ----------------------------
 
-      const { rows } = await query(
-        `SELECT room.r_id FROM room LEFT JOIN date ON (date.room_id = room.r_id 
-          AND NOT ( ("date"."start" < '${date.start}' and "date"."end" < '${date.start}') 
-          OR ("date"."start" > '${date.end}' and "date"."end" > '${date.end}') )) 
-        WHERE date.room_id IS NULL;`,
-      );
+      const { rows } = await query(Queries.getFreeRoom(date));
 
       if (rows) {
         isFree = rows.some((el) => el.r_id === Number(params.id));
       }
 
-      const time = await query(
-        `select -('${date.start}'::timestamp-'${date.end}') as period`,
-      );
+      const time = await query(Queries.getPeriod(date));
       const { days } = time.rows[0].period;
 
       // тоже функция ?--------------
@@ -165,10 +154,7 @@ export class AppController {
       // тоже функция ?--------------
 
       if (isFree) {
-        await query(
-          `INSERT INTO date ("start", "end", room_id, price, interval)
-          VALUES ('${date.start}','${date.end}',${params.id},${price},-('${date.start}'::timestamp-'${date.end}'));`,
-        );
+        await query(Queries.insertInDate(date, params.id, price));
         return `Congratulations, Your room ${params.id} is booked from ${date.start} to ${date.end}`;
       } else return `Room is already booked from ${date.start} to ${date.end}`;
     };
@@ -185,26 +171,13 @@ export class AppController {
     type: [Report],
   })
   getReport(@Query() date: IDateInterval) {
-    if (!isValid(date.start, date.end)) return 'Dates are not valid!!!';
+    const dateIsValid = isValid(date.start, date.end);
+    if (!dateIsValid) return 'Dates are not valid!!!';
 
     const reporting = async () => {
-      const { rows } = await query(
-        `SELECT TO_CHAR(g.d, 'YYYY-MM-DD') AS Date, COUNT(*) AS Used
-        FROM generate_series(
-            (select '${date.start}')::timestamp,
-            (select '${date.end}')::timestamp, '1 day'
-          ) AS g(d)
-        INNER JOIN date d
-          ON 
-          (g.d + INTERVAL '1 day', g.d - INTERVAL '1 day') OVERLAPS (d.start, d.end)
-          GROUP BY 1
-        HAVING COUNT(*) > 0
-        ORDER BY 1`,
-      );
+      const { rows } = await query(Queries.generateReport(date));
 
-      const time = await query(
-        `select -('${date.start}'::timestamp-'${date.end}') as period`,
-      );
+      const time = await query(Queries.getPeriod(date));
       const { days } = time.rows[0].period;
 
       // тоже в функцию? -------------

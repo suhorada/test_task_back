@@ -10,9 +10,9 @@ const pgConfig: PoolConfig = {
 };
 
 const pool = new Pool(pgConfig);
-const query = async (text: string): Promise<QueryResult> => {
+const query = async (text: string, args?: any[]): Promise<QueryResult> => {
   return await pool
-    .query(text)
+    .query(text, args)
     .then((res) => res)
     .catch((err) => err);
 };
