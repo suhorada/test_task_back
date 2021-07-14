@@ -169,8 +169,7 @@ export class AppController {
           `INSERT INTO date ("start", "end", room_id, price, interval)
           VALUES ('${date.start}','${date.end}',${params.id},${price},-('${date.start}'::timestamp-'${date.end}'));`,
         );
-        return `Congratulations, Your room ${params.id} is booked from ${date.start} to ${date.end}
-        ${rows}`;
+        return `Congratulations, Your room ${params.id} is booked from ${date.start} to ${date.end}`;
       } else return `Room is already booked from ${date.start} to ${date.end}`;
     };
     return tryToPost();
