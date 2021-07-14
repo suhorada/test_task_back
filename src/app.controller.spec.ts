@@ -118,13 +118,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-02-01',
+          start: '2021-02-02',
           end: '2021-02-13',
         },
         { id: '1' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-02-01', '2021-02-13', '1'),
+        test.successBooking('2021-02-02', '2021-02-13', '1'),
       );
     });
   });
@@ -133,13 +133,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-02-01',
+          start: '2021-02-02',
           end: '2021-02-13',
         },
         { id: '2' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-02-01', '2021-02-13', '2'),
+        test.successBooking('2021-02-02', '2021-02-13', '2'),
       );
     });
   });
@@ -148,13 +148,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-02-01',
+          start: '2021-02-02',
           end: '2021-02-13',
         },
         { id: '3' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-02-01', '2021-02-13', '3'),
+        test.successBooking('2021-02-02', '2021-02-13', '3'),
       );
     });
   });
@@ -163,13 +163,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-02-01',
+          start: '2021-02-02',
           end: '2021-02-13',
         },
         { id: '4' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-02-01', '2021-02-13', '4'),
+        test.successBooking('2021-02-02', '2021-02-13', '4'),
       );
     });
   });
@@ -178,13 +178,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-02-01',
+          start: '2021-02-02',
           end: '2021-02-13',
         },
         { id: '5' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-02-01', '2021-02-13', '5'),
+        test.successBooking('2021-02-02', '2021-02-13', '5'),
       );
     });
   });
@@ -195,13 +195,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-02-25',
+          start: '2021-02-26',
           end: '2021-02-28',
         },
         { id: '1' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-02-25', '2021-02-28', '1'),
+        test.successBooking('2021-02-26', '2021-02-28', '1'),
       );
     });
   });
@@ -210,13 +210,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-02-25',
+          start: '2021-02-26',
           end: '2021-02-28',
         },
         { id: '2' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-02-25', '2021-02-28', '2'),
+        test.successBooking('2021-02-26', '2021-02-28', '2'),
       );
     });
   });
@@ -225,13 +225,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-02-25',
+          start: '2021-02-26',
           end: '2021-02-28',
         },
         { id: '3' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-02-25', '2021-02-28', '3'),
+        test.successBooking('2021-02-26', '2021-02-28', '3'),
       );
     });
   });
@@ -240,13 +240,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-02-25',
+          start: '2021-02-26',
           end: '2021-02-28',
         },
         { id: '4' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-02-25', '2021-02-28', '4'),
+        test.successBooking('2021-02-26', '2021-02-28', '4'),
       );
     });
   });
@@ -255,13 +255,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-02-25',
+          start: '2021-02-26',
           end: '2021-02-28',
         },
         { id: '5' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-02-25', '2021-02-28', '5'),
+        test.successBooking('2021-02-26', '2021-02-28', '5'),
       );
     });
   });
@@ -272,13 +272,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-03-01',
+          start: '2021-03-02',
           end: '2021-03-07',
         },
         { id: '5' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-03-01', '2021-03-07', '5'),
+        test.successBooking('2021-03-02', '2021-03-07', '5'),
       );
     });
   });
@@ -302,13 +302,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-03-18',
+          start: '2021-03-19',
           end: '2021-03-20',
         },
         { id: '5' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-03-18', '2021-03-20', '5'),
+        test.successBooking('2021-03-19', '2021-03-20', '5'),
       );
     });
   });
@@ -332,13 +332,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-03-25',
+          start: '2021-03-26',
           end: '2021-03-27',
         },
         { id: '5' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-03-25', '2021-03-27', '5'),
+        test.successBooking('2021-03-26', '2021-03-27', '5'),
       );
     });
   });
@@ -364,13 +364,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-05-10',
-          end: '2021-05-17',
+          start: '2021-05-11',
+          end: '2021-05-16',
         },
         { id: '1' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-05-10', '2021-05-17', '1'),
+        test.successBooking('2021-05-11', '2021-05-16', '1'),
       );
     });
   });
@@ -380,12 +380,12 @@ describe('AppController', () => {
       const result = await appController.dealRoom(
         {
           start: '2021-05-18',
-          end: '2021-05-20',
+          end: '2021-05-21',
         },
         { id: '1' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-05-18', '2021-05-20', '1'),
+        test.successBooking('2021-05-18', '2021-05-21', '1'),
       );
     });
   });
@@ -394,13 +394,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-05-21',
+          start: '2021-05-22',
           end: '2021-05-23',
         },
         { id: '1' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-05-21', '2021-05-23', '1'),
+        test.successBooking('2021-05-22', '2021-05-23', '1'),
       );
     });
   });
@@ -410,12 +410,12 @@ describe('AppController', () => {
       const result = await appController.dealRoom(
         {
           start: '2021-05-25',
-          end: '2021-05-27',
+          end: '2021-05-28',
         },
         { id: '1' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-05-25', '2021-05-27', '1'),
+        test.successBooking('2021-05-25', '2021-05-28', '1'),
       );
     });
   });
@@ -426,13 +426,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-04-01',
+          start: '2021-04-02',
           end: '2021-04-07',
         },
         { id: '2' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-04-01', '2021-04-07', '2'),
+        test.successBooking('2021-04-02', '2021-04-07', '2'),
       );
     });
   });
@@ -580,13 +580,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-07-01',
+          start: '2021-07-02',
           end: '2021-07-21',
         },
         { id: '1' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-07-01', '2021-07-21', '1'),
+        test.successBooking('2021-07-02', '2021-07-21', '1'),
       );
     });
   });
@@ -595,13 +595,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-07-01',
+          start: '2021-07-02',
           end: '2021-07-21',
         },
         { id: '2' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-07-01', '2021-07-21', '2'),
+        test.successBooking('2021-07-02', '2021-07-21', '2'),
       );
     });
   });
@@ -610,13 +610,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-07-01',
+          start: '2021-07-02',
           end: '2021-07-21',
         },
         { id: '3' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-07-01', '2021-07-21', '3'),
+        test.successBooking('2021-07-02', '2021-07-21', '3'),
       );
     });
   });
@@ -625,13 +625,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-07-01',
+          start: '2021-07-02',
           end: '2021-07-21',
         },
         { id: '4' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-07-01', '2021-07-21', '4'),
+        test.successBooking('2021-07-02', '2021-07-21', '4'),
       );
     });
   });
@@ -640,13 +640,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-07-01',
+          start: '2021-07-02',
           end: '2021-07-21',
         },
         { id: '5' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-07-01', '2021-07-21', '5'),
+        test.successBooking('2021-07-02', '2021-07-21', '5'),
       );
     });
   });
@@ -734,13 +734,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-11-01',
+          start: '2021-11-02',
           end: '2021-11-21',
         },
         { id: '1' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-11-01', '2021-11-21', '1'),
+        test.successBooking('2021-11-02', '2021-11-21', '1'),
       );
     });
   });
@@ -749,13 +749,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-11-01',
+          start: '2021-11-02',
           end: '2021-11-21',
         },
         { id: '2' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-11-01', '2021-11-21', '2'),
+        test.successBooking('2021-11-02', '2021-11-21', '2'),
       );
     });
   });
@@ -764,13 +764,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-11-01',
+          start: '2021-11-02',
           end: '2021-11-21',
         },
         { id: '3' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-11-01', '2021-11-21', '3'),
+        test.successBooking('2021-11-02', '2021-11-21', '3'),
       );
     });
   });
@@ -779,13 +779,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-11-01',
+          start: '2021-11-02',
           end: '2021-11-21',
         },
         { id: '4' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-11-01', '2021-11-21', '4'),
+        test.successBooking('2021-11-02', '2021-11-21', '4'),
       );
     });
   });
@@ -794,13 +794,13 @@ describe('AppController', () => {
     it('should return answer about booking', async () => {
       const result = await appController.dealRoom(
         {
-          start: '2021-11-01',
+          start: '2021-11-02',
           end: '2021-11-21',
         },
         { id: '5' },
       );
       expect(result).toStrictEqual(
-        test.successBooking('2021-11-01', '2021-11-21', '5'),
+        test.successBooking('2021-11-02', '2021-11-21', '5'),
       );
     });
   });

@@ -54,6 +54,11 @@ class Report {
 }
 
 const ROOMS_COUNT = 10;
+const SM_DISCOUNT = 0.9;
+const MD_DISCOUNT = 0.8;
+const SM_DAYS_COUNT = 10;
+const MD_DAYS_COUNT = 20;
+const DAY_PRICE = 1000;
 const monthNames: string[] = [
   'January',
   'February',
@@ -76,76 +81,70 @@ const isValid = (start: string, end: string): true | false => {
   return d > 0;
 };
 
-const getRooms = (date: IDateInterval) => {
-  const getFree = async () => {
-    const { rows } = await query(Queries.getFreeRoom, [date.start, date.end]);
-    return rows;
-  };
-  return getFree();
+const getRooms = async (date: IDateInterval) => {
+  const { rows } = await query(Queries.getFreeRoom, [date.start, date.end]);
+  return rows;
 };
 
-const checkDays = async (date: IDateInterval) => {
-  const startQuery = await query(Queries.getDayOfDate(date.start));
-  const endQuery = await query(Queries.getDayOfDate(date.end));
-  const startLikeWeek = startQuery.rows[0].date_part;
-  const endLikeWeek = endQuery.rows[0].date_part;
+const checkDays = (date: IDateInterval) => {
+  const start = new Date(date.start);
+  const end = new Date(date.end);
 
   if (
-    startLikeWeek === 4 ||
-    startLikeWeek === 1 ||
-    endLikeWeek === 4 ||
-    endLikeWeek === 1
+    start.getDay() === 4 ||
+    start.getDay() === 1 ||
+    end.getDay() === 4 ||
+    end.getDay() === 1
   ) {
-    return "Booking can't be at Monday or Thursday";
-  }
+    return true;
+  } else return false;
 };
 
 const calcPrice = (days: number) => {
   let price: number;
-  if (days <= 10 && days > 0) {
-    price = days * 1000;
-  } else if (days <= 20) {
-    price = days * 1000 * 0.9;
+  if (days <= SM_DAYS_COUNT && days > 0) {
+    price = days * DAY_PRICE;
+  } else if (days <= MD_DAYS_COUNT) {
+    price = days * DAY_PRICE * SM_DISCOUNT;
   } else {
-    price = days * 1000 * 0.8;
+    price = days * DAY_PRICE * MD_DISCOUNT;
   }
   return price;
 };
 
-const postBooking = (date: IDateInterval, params: IParams) => {
-  const tryToPost = async () => {
-    let isFree: true | false = false;
+const postBooking = async (date: IDateInterval, params: IParams) => {
+  let isFree: true | false = false;
 
-    await checkDays(date);
+  if (checkDays(date)) {
+    return "Booking can't be at Monday or Thursday";
+  }
 
-    const { rows } = await query(Queries.getFreeRoom, [date.start, date.end]);
+  const { rows } = await query(Queries.getFreeRoom, [date.start, date.end]);
 
-    if (!rows) {
-      return 'Free rooms does not exists';
-    } else {
-      const id = Number(params.id);
-      isFree = rows.some((el) => {
-        return el.r_id === id;
-      });
-    }
+  if (!rows) {
+    return 'Free rooms does not exists';
+  } else {
+    const id = Number(params.id);
+    isFree = rows.some((el) => {
+      return el.r_id === id;
+    });
+  }
 
-    const time = await query(Queries.getPeriod, [date.start, date.end]);
-    const { days } = time.rows[0].period;
-    const price = calcPrice(days);
+  const time = await query(Queries.getPeriod, [date.start, date.end]);
+  const { days } = time.rows[0].period;
+  const price = calcPrice(days);
 
-    if (isFree) {
-      const a = await query(Queries.insertInDate, [
-        date.start,
-        date.end,
-        params.id,
-        price,
-      ]);
-      return `Congratulations, Your room ${params.id} is booked from ${date.start} to ${date.end}`;
-    } else {
-      return `Room is already booked from ${date.start} to ${date.end}`;
-    }
-  };
-  return tryToPost();
+  if (isFree) {
+    const a = await query(Queries.insertInDate, [
+      date.start,
+      date.end,
+      params.id,
+      price,
+    ]);
+    return `Congratulations, Your room ${params.id} is booked from ${date.start} to ${date.end}`;
+  } else {
+    return `Room is already booked from ${date.start} to ${date.end}`;
+  }
 };
 
 const reportFormating = (rows: IReportRow[]) => {
@@ -183,16 +182,10 @@ const reportFormating = (rows: IReportRow[]) => {
   return report;
 };
 
-const report = (date: IDateInterval) => {
-  const reporting = async () => {
-    const { rows } = await query(Queries.generateReport, [
-      date.start,
-      date.end,
-    ]);
-    const report = reportFormating(rows);
-    return report;
-  };
-  return reporting();
+const report = async (date: IDateInterval) => {
+  const { rows } = await query(Queries.generateReport, [date.start, date.end]);
+  const report = reportFormating(rows);
+  return report;
 };
 
 @Controller()
