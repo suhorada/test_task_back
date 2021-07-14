@@ -140,7 +140,6 @@ const postBooking = (date: IDateInterval, params: IParams) => {
         params.id,
         price,
       ]);
-      console.log(a);
       return `Congratulations, Your room ${params.id} is booked from ${date.start} to ${date.end}`;
     } else {
       return `Room is already booked from ${date.start} to ${date.end}`;
@@ -150,7 +149,6 @@ const postBooking = (date: IDateInterval, params: IParams) => {
 };
 
 const reportFormating = (rows: IReportRow[]) => {
-  console.log(rows);
   const result = {};
   const report = {};
 
