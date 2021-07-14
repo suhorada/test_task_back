@@ -12,7 +12,6 @@ import {
 import * as Queries from './utils/SQL/queries';
 process.env.TZ = 'UTC';
 
-// где должны быть интерфейсы/классы?
 interface IDateInterval {
   start: string;
   end: string;
@@ -22,8 +21,9 @@ interface IParams {
   id: string;
 }
 
-interface Row {
-  [key: string]: string;
+interface IReportRow {
+  date: string;
+  used: string;
 }
 
 class DateQuery {
@@ -53,7 +53,6 @@ class Report {
   ['Month-YYYY']: DayLoad;
 }
 
-// константы могу вынести в отдельный модуль, но тут нагляднее
 const ROOMS_COUNT = 10;
 const monthNames: string[] = [
   'January',
@@ -77,6 +76,127 @@ const isValid = (start: string, end: string): true | false => {
   return d > 0;
 };
 
+const getRooms = (date: IDateInterval) => {
+  const getFree = async () => {
+    const { rows } = await query(Queries.getFreeRoom, [date.start, date.end]);
+    return rows;
+  };
+  return getFree();
+};
+
+const checkDays = async (date: IDateInterval) => {
+  const startQuery = await query(Queries.getDayOfDate(date.start));
+  const endQuery = await query(Queries.getDayOfDate(date.end));
+  const startLikeWeek = startQuery.rows[0].date_part;
+  const endLikeWeek = endQuery.rows[0].date_part;
+
+  if (
+    startLikeWeek === 4 ||
+    startLikeWeek === 1 ||
+    endLikeWeek === 4 ||
+    endLikeWeek === 1
+  ) {
+    return "Booking can't be at Monday or Thursday";
+  }
+};
+
+const calcPrice = (days: number) => {
+  let price: number;
+  if (days <= 10 && days > 0) {
+    price = days * 1000;
+  } else if (days <= 20) {
+    price = days * 1000 * 0.9;
+  } else {
+    price = days * 1000 * 0.8;
+  }
+  return price;
+};
+
+const postBooking = (date: IDateInterval, params: IParams) => {
+  const tryToPost = async () => {
+    let isFree: true | false = false;
+
+    await checkDays(date);
+
+    const { rows } = await query(Queries.getFreeRoom, [date.start, date.end]);
+
+    if (!rows) {
+      return 'Free rooms does not exists';
+    } else {
+      const id = Number(params.id);
+      isFree = rows.some((el) => {
+        return el.r_id === id;
+      });
+    }
+
+    const time = await query(Queries.getPeriod, [date.start, date.end]);
+    const { days } = time.rows[0].period;
+    const price = calcPrice(days);
+
+    if (isFree) {
+      const a = await query(Queries.insertInDate, [
+        date.start,
+        date.end,
+        params.id,
+        price,
+      ]);
+      console.log(a);
+      return `Congratulations, Your room ${params.id} is booked from ${date.start} to ${date.end}`;
+    } else {
+      return `Room is already booked from ${date.start} to ${date.end}`;
+    }
+  };
+  return tryToPost();
+};
+
+const reportFormating = (rows: IReportRow[]) => {
+  console.log(rows);
+  const result = {};
+  const report = {};
+
+  rows.forEach((el) => {
+    const date = new Date(el.date);
+    const name = monthNames[date.getMonth()];
+    const year = date.getFullYear();
+    const stringKey = `${name}-${year}`;
+    if (stringKey in result) {
+      const load = (Number(el.used) / ROOMS_COUNT) * 100;
+      result[stringKey] = {
+        customersCount: result[stringKey].customersCount + Number(el.used),
+        daysCount: result[stringKey].daysCount + 1,
+      };
+      report[stringKey] = {
+        ...report[stringKey],
+        [el.date]: `${load}%`,
+      };
+    } else {
+      const load = (Number(el.used) / ROOMS_COUNT) * 100;
+      result[stringKey] = {
+        customersCount: Number(el.used),
+        daysCount: 1,
+      };
+      report[stringKey] = {
+        [el.date]: `${load}%`,
+      };
+    }
+  });
+  report['objDescription'] =
+    'obj = { objDescription: string, month-YYYY: { YYYY-MM-DD: load } }';
+  return report;
+};
+
+const report = (date: IDateInterval) => {
+  const reporting = async () => {
+    const { rows } = await query(Queries.generateReport, [
+      date.start,
+      date.end,
+    ]);
+    const report = reportFormating(rows);
+    return report;
+  };
+  return reporting();
+};
+
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
@@ -93,16 +213,7 @@ export class AppController {
   })
   getFreeRooms(@Query() date: IDateInterval) {
     const dateIsValid = isValid(date.start, date.end);
-    if (!dateIsValid) return 'Dates are not valid!!!';
-
-    const getFree = async () => {
-      const { rows } = await query(Queries.getFreeRoom2(), [
-        date.start,
-        date.end,
-      ]);
-      return rows;
-    };
-    return getFree();
+    return dateIsValid ? getRooms(date) : 'Dates are not valid!!!';
   }
 
   @Post('/room/:id/date?')
@@ -117,48 +228,7 @@ export class AppController {
   @ApiQuery({ type: DateQuery, example: 'YYYY-MM-DD' })
   dealRoom(@Query() date: IDateInterval, @Param() params: IParams) {
     const dateIsValid = isValid(date.start, date.end);
-    if (!dateIsValid) return 'Dates are not valid!!!';
-
-    const tryToPost = async () => {
-      let isFree: true | false = false;
-      let price: number;
-
-      // нужно ли вынести в функцию? ----------------------------
-      const startQuery = await query(Queries.getDayOfDate(date.start));
-      const endQuery = await query(Queries.getDayOfDate(date.end));
-      const startLikeWeek = startQuery.rows[0].date_part;
-      const endLikeWeek = endQuery.rows[0].date_part;
-
-      if (
-        startLikeWeek === 4 ||
-        startLikeWeek === 1 ||
-        endLikeWeek === 4 ||
-        endLikeWeek === 1
-      )
-        return "Booking can't be at Monday or Thursday";
-      // нужно ли вынести в функцию? ----------------------------
-
-      const { rows } = await query(Queries.getFreeRoom(date));
-
-      if (rows) {
-        isFree = rows.some((el) => el.r_id === Number(params.id));
-      }
-
-      const time = await query(Queries.getPeriod(date));
-      const { days } = time.rows[0].period;
-
-      // тоже функция ?--------------
-      if (days <= 10 && days > 0) price = days * 1000;
-      else if (days <= 20) price = days * 1000 * 0.9;
-      else price = days * 1000 * 0.8;
-      // тоже функция ?--------------
-
-      if (isFree) {
-        await query(Queries.insertInDate(date, params.id, price));
-        return `Congratulations, Your room ${params.id} is booked from ${date.start} to ${date.end}`;
-      } else return `Room is already booked from ${date.start} to ${date.end}`;
-    };
-    return tryToPost();
+    return dateIsValid ? postBooking(date, params) : 'Dates are not valid!!!';
   }
 
   @Get('/report/date?')
@@ -172,48 +242,6 @@ export class AppController {
   })
   getReport(@Query() date: IDateInterval) {
     const dateIsValid = isValid(date.start, date.end);
-    if (!dateIsValid) return 'Dates are not valid!!!';
-
-    const reporting = async () => {
-      const { rows } = await query(Queries.generateReport(date));
-
-      const time = await query(Queries.getPeriod(date));
-      const { days } = time.rows[0].period;
-
-      // тоже в функцию? -------------
-      const result = {};
-      const report = {};
-
-      rows.forEach((el) => {
-        const date = new Date(el.date);
-        const stringKey = `${
-          monthNames[date.getMonth()]
-        }-${date.getFullYear()}`;
-        if (stringKey in result) {
-          result[stringKey] = {
-            customersCount: result[stringKey].customersCount + Number(el.used),
-            daysCount: result[stringKey].daysCount + 1,
-          };
-          report[stringKey] = {
-            ...report[stringKey],
-            [el.date]: (el.used / ROOMS_COUNT) * 100 + '%',
-          };
-        } else {
-          result[stringKey] = {
-            customersCount: Number(el.used),
-            daysCount: 1,
-          };
-          report[stringKey] = {
-            [el.date]: (el.used / ROOMS_COUNT) * 100 + '%',
-          };
-        }
-      });
-      report['obj_description'] =
-        'obj = { obj_description: string, month-YYYY: { YYYY-MM-DD: load } }';
-      // тоже в функцию? -------------
-
-      return report;
-    };
-    return reporting();
+    return dateIsValid ? report(date) : 'Dates are not valid!!!';
   }
 }
