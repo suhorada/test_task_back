@@ -11,3 +11,7 @@ export interface IReportRow {
   date: string;
   used: string;
 }
+
+export interface IFreeRow {
+  r_id: number;
+}

@@ -28,7 +28,7 @@ const getRooms = async (date: IDateInterval) => {
   return rows;
 };
 
-const checkDays = (date: IDateInterval) => {
+const checkDays = (date: IDateInterval): true | false => {
   const start = new Date(date.start);
   const end = new Date(date.end);
 
@@ -42,7 +42,7 @@ const checkDays = (date: IDateInterval) => {
   } else return false;
 };
 
-const calcPrice = (days: number) => {
+const calcPrice = (days: number): number => {
   let price: number;
   if (days <= constants.discount.SM_DAYS_COUNT && days > 0) {
     price = days * constants.DAY_PRICE;
@@ -77,12 +77,7 @@ const postBooking = async (date: IDateInterval, params: IParams) => {
   const price = calcPrice(days);
 
   if (isFree) {
-    const a = await query(Queries.insertInDate, [
-      date.start,
-      date.end,
-      params.id,
-      price,
-    ]);
+    await query(Queries.insertInDate, [date.start, date.end, params.id, price]);
     return `Congratulations, Your room ${params.id} is booked from ${date.start} to ${date.end}`;
   } else {
     return `Room is already booked from ${date.start} to ${date.end}`;
