@@ -1,78 +1,20 @@
 import { Controller, Get, Param, Post, Query } from '@nestjs/common';
-import query from './app.database';
-import { AppService } from './app.service';
 import {
   ApiCreatedResponse,
   ApiOkResponse,
   ApiParam,
-  ApiProperty,
   ApiQuery,
   ApiBody,
 } from '@nestjs/swagger';
+
+import { AppService } from './app.service';
+import query from './app.database';
 import * as Queries from './utils/SQL/queries';
+import { IDateInterval, IParams, IReportRow } from './types/interface';
+import { DateQuery, IdParam, Rooms, Report } from './types/class';
+import { constants } from './utils/const';
+
 process.env.TZ = 'UTC';
-
-interface IDateInterval {
-  start: string;
-  end: string;
-}
-
-interface IParams {
-  id: string;
-}
-
-interface IReportRow {
-  date: string;
-  used: string;
-}
-
-class DateQuery {
-  @ApiProperty()
-  start: string;
-  @ApiProperty()
-  end: string;
-}
-
-class IdParam {
-  @ApiProperty()
-  id: string;
-}
-
-class Rooms {
-  @ApiProperty()
-  r_id: number;
-}
-
-class DayLoad {
-  @ApiProperty()
-  ['YYYY-MM-DD']: string;
-}
-
-class Report {
-  @ApiProperty()
-  ['Month-YYYY']: DayLoad;
-}
-
-const ROOMS_COUNT = 10;
-const SM_DISCOUNT = 0.9;
-const MD_DISCOUNT = 0.8;
-const SM_DAYS_COUNT = 10;
-const MD_DAYS_COUNT = 20;
-const DAY_PRICE = 1000;
-const monthNames: string[] = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
 
 const isValid = (start: string, end: string): true | false => {
   const firstDate: Date = new Date(start);
@@ -102,12 +44,12 @@ const checkDays = (date: IDateInterval) => {
 
 const calcPrice = (days: number) => {
   let price: number;
-  if (days <= SM_DAYS_COUNT && days > 0) {
-    price = days * DAY_PRICE;
-  } else if (days <= MD_DAYS_COUNT) {
-    price = days * DAY_PRICE * SM_DISCOUNT;
+  if (days <= constants.discount.SM_DAYS_COUNT && days > 0) {
+    price = days * constants.DAY_PRICE;
+  } else if (days <= constants.discount.MD_DAYS_COUNT) {
+    price = days * constants.DAY_PRICE * constants.discount.SM_DISCOUNT;
   } else {
-    price = days * DAY_PRICE * MD_DISCOUNT;
+    price = days * constants.DAY_PRICE * constants.discount.MD_DISCOUNT;
   }
   return price;
 };
@@ -153,11 +95,11 @@ const reportFormating = (rows: IReportRow[]) => {
 
   rows.forEach((el) => {
     const date = new Date(el.date);
-    const name = monthNames[date.getMonth()];
+    const name = constants.monthNames[date.getMonth()];
     const year = date.getFullYear();
     const stringKey = `${name}-${year}`;
     if (stringKey in result) {
-      const load = (Number(el.used) / ROOMS_COUNT) * 100;
+      const load = (Number(el.used) / constants.ROOMS_COUNT) * 100;
       result[stringKey] = {
         customersCount: result[stringKey].customersCount + Number(el.used),
         daysCount: result[stringKey].daysCount + 1,
@@ -167,7 +109,7 @@ const reportFormating = (rows: IReportRow[]) => {
         [el.date]: `${load}%`,
       };
     } else {
-      const load = (Number(el.used) / ROOMS_COUNT) * 100;
+      const load = (Number(el.used) / constants.ROOMS_COUNT) * 100;
       result[stringKey] = {
         customersCount: Number(el.used),
         daysCount: 1,
